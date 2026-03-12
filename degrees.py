@@ -1,6 +1,8 @@
 import csv
 import sys
 
+from util import Node, QueueFrontier  # ty:ignore[unresolved-import]
+
 # Maps names to a set of corresponding person_ids
 names = {}
 
@@ -90,8 +92,41 @@ def shortest_path(source, target):
     If no possible path, returns None.
     """
 
-    # TODO
-    raise NotImplementedError
+    # Initialize frontier with the starting position
+    start = Node(state=source, parent=None, action=None)
+    frontier = QueueFrontier()
+    frontier.add(start)
+
+    # Keep track of explored states
+    explored = set()
+
+    while True:
+        # If nothing left in frontier, then no path
+        if frontier.empty():
+            return None
+
+        # Choose a node from the frontier
+        node = frontier.remove()
+
+        # Mark node as explored
+        explored.add(node.state)
+
+        # Add neighbors to frontier
+        for movie_id, person_id in neighbors_for_person(node.state):
+            if not frontier.contains_state(person_id) and person_id not in explored:
+                child = Node(state=person_id, parent=node, action=movie_id)
+
+                # Check if child is the goal
+                if child.state == target:
+                    # Reconstruct path
+                    path = []
+                    while child.parent is not None:
+                        path.append((child.action, child.state))
+                        child = child.parent
+                    path.reverse()
+                    return path
+
+                frontier.add(child)
 
 
 def person_id_for_name(name):
